@@ -2,10 +2,9 @@ use std::mem;
 use super::segment;
 use super::direction;
 use super::rawlink;
+use super::map;
 
 pub struct Snake {
-    pub x: i32,
-    pub y: i32,
     pub head: Option<Box<segment::Segment>>,
     pub tail: rawlink::RawLink<segment::Segment>,
 }
@@ -14,15 +13,16 @@ impl Snake {
 
     pub fn new() -> Snake {
         let mut head = Box::new(segment::Segment::new());
-        Snake { tail: rawlink::RawLink::some(&mut *head), head: Some(head), x: 0, y: 0 }
+        Snake { tail: rawlink::RawLink::some(&mut *head), head: Some(head) }
     }
 
-    pub fn step(&mut self, dir: direction::Direction) {
+    pub fn step(&mut self, map: &mut map::Map, dir: direction::Direction) {
         let mut new_head = false;
         match self.head {
             Some(ref mut head) => {
                 if head.dir == dir {
                     head.increase();
+                    head.update();
                 } else {
                     new_head = true;
                 }
@@ -30,27 +30,42 @@ impl Snake {
             None => panic!("Could not move an empty snake !")
         };
         if new_head { self.new_head(dir); }
-        self.x += dir.to_x() as i32;
-        self.y += dir.to_y() as i32;
-        self.move_tail();
+        map.set_snake_head(self);
+        self.move_tail(map);
         self.check_bounds();
+        let mut to_eat = false;
+        match self.head {
+            Some(ref mut head) => {
+                if map.is_food(head.x, head.y) { to_eat = true; }
+            }
+            None => panic!("No head")
+        };
+        if to_eat { self.eat(); }
     }
 
     fn check_bounds(&mut self) {
     }
 
-    fn move_tail(&mut self) {
+    fn move_tail(&mut self, map: &mut map::Map) {
         self.tail = match self.tail.resolve() {
-            Some(tail) =>  tail.decrease(),
+            Some(tail) => {
+                let x = tail.x - (tail.size as i32 -1)*tail.dir.to_x() as i32;
+                let y = tail.y - (tail.size as i32 -1)*tail.dir.to_y() as i32;
+                map.move_snake_tail(x, y);
+                tail.decrease()
+            }
             None => {
                 panic!("Snake should not be empty");
             }
         }
     }
 
-    pub fn eat(&mut self) {
-        match self.head {
-            Some(ref mut head) => head.increase(),
+    fn eat(&mut self) {
+        match self.tail.resolve() {
+            Some(ref mut tail) => {
+                tail.increase();
+                tail.update();
+            }
             None => { panic!("Could not eat without a head"); }
         };
     }
@@ -59,6 +74,8 @@ impl Snake {
         match self.head {
             Some(ref mut head) => {
                 let mut new_head = Box::new(segment::Segment::new());
+                new_head.x = head.x + dir.to_x() as i32;
+                new_head.y = head.y + dir.to_y() as i32;
                 new_head.dir = dir;
                 head.prev = rawlink::RawLink::some(&mut *new_head);
                 mem::swap(head, &mut new_head);
