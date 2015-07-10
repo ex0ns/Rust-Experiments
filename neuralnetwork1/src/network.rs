@@ -65,6 +65,43 @@ impl Network {
     }
 
     fn update_mini_batch(&mut self, batch: &[(f64, f64)], eta: f32) {
+        let nabla_b = self.biases
+            .iter()
+            .map(|ref biais| DMat::new_zeros(biais.nrows(), biais.ncols()))
+            .collect::<Vec<DMat<f64>>>();   
+        let nabla_w = self.weights
+            .iter()
+            .map(|ref weight| DMat::new_zeros(weight.nrows(), weight.ncols()))
+            .collect::<Vec<DMat<f64>>>();
+        for &(a, b) in batch {
+            println!("{} {}", a, b);
+        }
+    }
+
+    fn backprop(&mut self, x: f64, y: f64) {
+        let nabla_b = self.biases
+            .iter()
+            .map(|ref biais| DMat::new_zeros(biais.nrows(), biais.ncols()))
+            .collect::<Vec<DMat<f64>>>();   
+        let nabla_w = self.weights
+            .iter()
+            .map(|ref weight| DMat::new_zeros(weight.nrows(), weight.ncols()))
+            .collect::<Vec<DMat<f64>>>();
+
+        let mut activation = x;
+        let mut activations = vec![x];
+        let mut zs : Vec<DMat<f64>> = vec![];
+        
+        let w_ite = self.weights.iter();
+        let b_ite = self.biases.iter();
+        let r = b_ite.zip(w_ite);
+
+        for (w,b) in r {
+//            let z = w * DMat::from_row_vec(1, activations.len(), &activations[..]) + b;
+//            zs.push(z);
+//            activation = z.map(|x| self.sigmoid(x));
+//            activations.push(activation);
+        }
 
     }
 }
