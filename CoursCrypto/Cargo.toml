@@ -1,0 +1,4 @@
+[package]
+name = "CoursCrypto"
+version = "0.1.0"
+authors = ["guillaume <guillaume.tournigand@epfl.ch>"]
