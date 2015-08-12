@@ -1,0 +1,7 @@
+[package]
+name = "test_c"
+version = "0.1.0"
+authors = ["ex0ns <guillaume.tournigand@epfl.ch>"]
+
+[dependencies]
+libc = "*"
