@@ -1,0 +1,7 @@
+[package]
+name = "ArcadeRS"
+version = "0.1.0"
+authors = ["ex0ns <guillaume.tournigand@epfl.ch>"]
+
+[dependencies]
+sdl2 = "0.6"
